@@ -35,6 +35,8 @@ def generate_slabs(mpid,
 
     if to_file:
         millerstr = ''.join([str(m) for m in miller_index])
+        bulk_formula = conv_bulk.composition.reduced_formula
+        conv_bulk.to('poscar', f'{bulk_formula}_conv_bulk.vasp')
         for index, slab in enumerate(slabs):
             formula = slab.composition.reduced_formula
             slab.to('poscar', f'{formula}_{millerstr}_term_{index}.vasp')
@@ -46,9 +48,9 @@ au_mpid = 'mp-81'
 lamno3_mpid = 'mp-19025'
 
 au_slabs = generate_slabs(mpid=au_mpid,
-                          miller_index=(1, 1, 1),
+                          miller_index=(1, 1, 0),
                           slab_thickness=10,
                           vacuum_thickness=20,
-                          symmetrize=False,
+                          symmetrize=True,
                           to_file=True,
                           filter_slabs=False)
