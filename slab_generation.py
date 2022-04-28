@@ -6,11 +6,12 @@ def generate_slabs(mpid,
                    miller_index,
                    slab_thickness,
                    vacuum_thickness,
+                   conv=True,
                    symmetrize=False,
                    to_file=False,
                    filter_slabs=False):
     with MPRester() as m:
-        conv_bulk = m.get_structure_by_material_id(mpid, conventional_unit_cell=True)
+        conv_bulk = m.get_structure_by_material_id(mpid, conventional_unit_cell=conv)
 
     sg = SlabGenerator(initial_structure=conv_bulk,  # conventional bulk structure
                        miller_index=miller_index,  # miller index for slabs
@@ -39,18 +40,19 @@ def generate_slabs(mpid,
         conv_bulk.to('poscar', f'{bulk_formula}_conv_bulk.vasp')
         for index, slab in enumerate(slabs):
             formula = slab.composition.reduced_formula
-            slab.to('poscar', f'{formula}_{millerstr}_term_{index}.vasp')
+            slab.to('poscar', f'{formula}_{millerstr}_conv_{conv}_term_{index}.vasp')
 
-    return slabs
+    return conv_bulk, slabs
 
 
 au_mpid = 'mp-81'
 lamno3_mpid = 'mp-19025'
 
 au_slabs = generate_slabs(mpid=au_mpid,
-                          miller_index=(1, 1, 0),
+                          miller_index=(1, 0, 0),
                           slab_thickness=10,
                           vacuum_thickness=20,
+                          conv=False,
                           symmetrize=True,
                           to_file=True,
                           filter_slabs=False)
