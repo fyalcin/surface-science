@@ -25,6 +25,7 @@ def generate_slabs(mpid,
                        max_normal_search=max([abs(m) for m in miller_index]))
 
     slabs = sg.get_slabs(symmetrize=symmetrize)
+    millerstr = ''.join([str(m) for m in miller_index])
 
     if recon:
         rg = ReconstructionGenerator(initial_structure=conv_bulk,
@@ -34,6 +35,13 @@ def generate_slabs(mpid,
 
         recon_slabs = rg.build_slabs()
         unrecon_slabs = rg.get_unreconstructed_slabs()
+        if to_file:
+            for index, slab in enumerate(recon_slabs):
+                formula = slab.composition.reduced_formula
+                slab.to('poscar', f'{formula}_{millerstr}_prim_{prim}_recon_term_{index}.vasp')
+            for index, slab in enumerate(unrecon_slabs):
+                formula = slab.composition.reduced_formula
+                slab.to('poscar', f'{formula}_{millerstr}_prim_{prim}_unrecon_term_{index}.vasp')
 
     # if filter_slabs:
     #     filtered_slabs = []
@@ -46,19 +54,11 @@ def generate_slabs(mpid,
     #         return None
 
     if to_file:
-        millerstr = ''.join([str(m) for m in miller_index])
         bulk_formula = conv_bulk.composition.reduced_formula
         conv_bulk.to('poscar', f'{bulk_formula}_conv_{conv}_bulk.vasp')
         for index, slab in enumerate(slabs):
             formula = slab.composition.reduced_formula
             slab.to('poscar', f'{formula}_{millerstr}_conv_{conv}_prim_{prim}_term_{index}.vasp')
-        if recon:
-            for index, slab in enumerate(recon_slabs):
-                formula = slab.composition.reduced_formula
-                slab.to('poscar', f'{formula}_{millerstr}_prim_{prim}_recon_term_{index}.vasp')
-            for index, slab in enumerate(unrecon_slabs):
-                formula = slab.composition.reduced_formula
-                slab.to('poscar', f'{formula}_{millerstr}_prim_{prim}_unrecon_term_{index}.vasp')
 
     return conv_bulk, slabs
 
