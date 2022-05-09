@@ -72,7 +72,7 @@ bulk_conv, slabs = generate_slabs(mpid=au_mpid,
                                   vacuum_thickness=15,
                                   conv=True,
                                   prim=True,
-                                  symmetrize=True,
+                                  symmetrize=False,
                                   to_file=True,
                                   filter_slabs=False,
                                   recon="diamond_100_2x1")
