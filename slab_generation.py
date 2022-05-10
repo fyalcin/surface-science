@@ -60,7 +60,7 @@ def generate_slabs(mpid,
             formula = slab.composition.reduced_formula
             slab.to('poscar', f'{formula}_{millerstr}_conv_{conv}_prim_{prim}_term_{index}.vasp')
 
-    return conv_bulk, slabs
+    return conv_bulk, unrecon_slabs
 
 
 au_mpid = 'mp-149'
@@ -68,7 +68,7 @@ lamno3_mpid = 'mp-19025'
 
 bulk_conv, slabs = generate_slabs(mpid=au_mpid,
                                   miller_index=(1, 0, 0),
-                                  slab_thickness=10,
+                                  slab_thickness=20,
                                   vacuum_thickness=15,
                                   conv=True,
                                   prim=True,

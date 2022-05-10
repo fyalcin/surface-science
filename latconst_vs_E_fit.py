@@ -31,6 +31,6 @@ fit = eos.fit(volumes, energies)
 plt = fit.plot(bbox_inches='tight')
 latconst = np.round((fit.eos_params[-1] * (1 / cp)) ** (1 / 3), 4)
 
-plt.text(0.1, 0.9, f'Lattice constant at minimum volume: {latconst}',
+plt.text(0.1, 0.9, f'Lattice constant at minimum volume: {latconst}A',
          transform=plt.gca().transAxes)
 plt.savefig('latconst_converge.png', dpi=300, bbox_inches='tight')
