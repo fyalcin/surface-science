@@ -5,6 +5,7 @@ from pymatgen.electronic_structure.plotter import DosPlotter
 from pymatgen.io.vasp.outputs import Vasprun
 from triboflow.phys.shaper import Shaper
 plt.rcParams.update({'axes.titlesize': 'x-large'})
+
 struct = Structure.from_file(f"Si_recon_5.vasp")
 layers = Shaper.get_layers(struct)
 c_values = sorted(layers.keys())
@@ -22,28 +23,25 @@ bulk_en_ref = -5.41378666
 
 energies = []
 for angle in np.arange(0, 50, 5):
-    # if not angle == 5:
-    #     continue
-    plotter = DosPlotter()
-    slab = Structure.from_file(f"Si_recon_{angle}.vasp")
     vr = Vasprun(f"{angle}.xml")
+
+    slab = Structure.from_file(f"Si_recon_{angle}.vasp")
     slab_en = vr.final_energy
     surfen = (slab_en - num_sites * bulk_en_ref) / area
     energies.append((angle, surfen))
-    tdos = vr.complete_dos
 
-    # dos_dict = tdos.get_site_spd_dos(slab[layer_top[1]])
+    tdos = vr.complete_dos
+    plotter = DosPlotter()
+
     dos_dict = tdos.get_spd_dos()
     for orbital, dos in dos_dict.items():
         plotter.add_dos(label=f"{orbital}", dos=dos)
 
     plt = plotter.get_plot()
-
     plt.title(f"DOS of Si(100) 2x1 reconstruction for u={angle} degrees")
     leg = plt.gca().get_legend()
     ltext = leg.get_texts()  # all the text.Text instance in the legend
     plt.setp(ltext, fontsize=30)
-    # plt.tight_layout()
     plt.savefig(f"DOS_{angle}.png", dpi=300, bbox_inches='tight')
 
 #
