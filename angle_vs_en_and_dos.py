@@ -1,30 +1,71 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from pymatgen.core.structure import Structure
 from pymatgen.electronic_structure.plotter import DosPlotter
 from pymatgen.io.vasp.outputs import Vasprun
+from triboflow.phys.shaper import Shaper
+plt.rcParams.update({'axes.titlesize': 'x-large'})
+struct = Structure.from_file(f"Si_recon_5.vasp")
+layers = Shaper.get_layers(struct)
+c_values = sorted(layers.keys())
+layer_size = 2
+top_c = c_values[-layer_size:]
+bot_c = c_values[:layer_size]
 
+layer_bot = [item for sublist in [layers[i] for i in bot_c] for item in sublist]
+layer_top = [item for sublist in [layers[i] for i in top_c] for item in sublist]
+
+area = Shaper.get_surface_area(struct)
+num_sites = struct.num_sites
+
+bulk_en_ref = -5.41378666
 
 energies = []
 for angle in np.arange(0, 50, 5):
+    # if not angle == 5:
+    #     continue
     plotter = DosPlotter()
+    slab = Structure.from_file(f"Si_recon_{angle}.vasp")
     vr = Vasprun(f"{angle}.xml")
-    energies.append((angle, vr.final_energy))
-    cdos = vr.complete_dos
+    slab_en = vr.final_energy
+    surfen = (slab_en - num_sites * bulk_en_ref) / area
+    energies.append((angle, surfen))
+    tdos = vr.complete_dos
 
-    plotter.add_dos(f'{angle}_tdos', cdos)
+    # dos_dict = tdos.get_site_spd_dos(slab[layer_top[1]])
+    dos_dict = tdos.get_spd_dos()
+    for orbital, dos in dos_dict.items():
+        plotter.add_dos(label=f"{orbital}", dos=dos)
 
-    plotter.show()
+    plt = plotter.get_plot()
 
-energies = np.asarray(energies)
-xarr, yarr = map(np.array, zip(*energies))
-xarr = (xarr - xarr.mean()) / xarr.std()
-fit = np.polyfit(xarr, yarr, 6)
-f = np.poly1d(fit)
-fig, ax = plt.subplots()
-crit = f.deriv().r
-r_crit = crit[crit.imag == 0].real
+    plt.title(f"DOS of Si(100) 2x1 reconstruction for u={angle} degrees")
+    leg = plt.gca().get_legend()
+    ltext = leg.get_texts()  # all the text.Text instance in the legend
+    plt.setp(ltext, fontsize=30)
+    # plt.tight_layout()
+    plt.savefig(f"DOS_{angle}.png", dpi=300, bbox_inches='tight')
 
-ax.scatter(xarr, energies[:, 1])
-ax.plot(xarr, f(xarr), label='fit')
-
-plt.show()
+#
+# energies = np.asarray(energies)
+# xarr, yarr = map(np.array, zip(*energies))
+# xarr_norm = (xarr - xarr.mean()) / xarr.std()
+# fit = np.polyfit(xarr_norm, yarr, 6)
+# f = np.poly1d(fit)
+# fig, ax = plt.subplots()
+# crit = f.deriv().r
+# r_crit = crit[crit.imag == 0].real
+# r_crit = np.round(r_crit*xarr.std() + xarr.mean(), 3)
+#
+# ax.scatter(xarr, energies[:, 1])
+# ax.plot(xarr, f(xarr_norm), label='fit')
+# ax.set_title("Surface energy vs u")
+# ax.set_xlabel("asdsa")
+# plt.grid(True)
+# plt.xlabel("u (degrees)")
+# plt.ylabel("$\\gamma$ (eV/$\\AA^2$)")
+# plt.text(0.4, 0.9, f'Optimized u: {r_crit[-1]} degrees',
+#          transform=plt.gca().transAxes)
+# plt.legend(loc="best", shadow=True)
+#
+# plt.savefig('u_vs_surfen.png', dpi=300, bbox_inches='tight')
