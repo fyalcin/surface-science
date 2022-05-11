@@ -20,22 +20,23 @@ area = Shaper.get_surface_area(struct)
 num_sites = struct.num_sites
 
 bulk_en_ref = -5.41378666
-
+evtoj = 16.02176
 energies = []
 for angle in np.arange(0, 50, 5):
     vr = Vasprun(f"{angle}.xml")
 
     slab = Structure.from_file(f"Si_recon_{angle}.vasp")
     slab_en = vr.final_energy
-    surfen = (slab_en - num_sites * bulk_en_ref) / area
+    surfen = 0.5 * evtoj * (slab_en - num_sites * bulk_en_ref) / area
     energies.append((angle, surfen))
 
     tdos = vr.complete_dos
     plotter = DosPlotter()
-
+    plotter.add_dos(label='total', dos=tdos)
     dos_dict = tdos.get_spd_dos()
     for orbital, dos in dos_dict.items():
-        plotter.add_dos(label=f"{orbital}", dos=dos)
+        if not orbital.name == 'd':
+            plotter.add_dos(label=f"{orbital}", dos=dos)
 
     plt = plotter.get_plot()
     plt.title(f"DOS of Si(100) 2x1 reconstruction for u={angle} degrees")
@@ -44,7 +45,7 @@ for angle in np.arange(0, 50, 5):
     plt.setp(ltext, fontsize=30)
     plt.savefig(f"DOS_{angle}.png", dpi=300, bbox_inches='tight')
 
-#
+
 # energies = np.asarray(energies)
 # xarr, yarr = map(np.array, zip(*energies))
 # xarr_norm = (xarr - xarr.mean()) / xarr.std()
@@ -61,7 +62,7 @@ for angle in np.arange(0, 50, 5):
 # ax.set_xlabel("asdsa")
 # plt.grid(True)
 # plt.xlabel("u (degrees)")
-# plt.ylabel("$\\gamma$ (eV/$\\AA^2$)")
+# plt.ylabel("$\\gamma$ ($J/m^2$)")
 # plt.text(0.4, 0.9, f'Optimized u: {r_crit[-1]} degrees',
 #          transform=plt.gca().transAxes)
 # plt.legend(loc="best", shadow=True)

@@ -1,5 +1,6 @@
 from pymatgen.core.surface import SlabGenerator, ReconstructionGenerator
 from pymatgen.ext.matproj import MPRester
+from triboflow.phys.shaper import Shaper
 
 
 def generate_slabs(mpid,
@@ -20,7 +21,7 @@ def generate_slabs(mpid,
                        min_slab_size=slab_thickness,  # minimum slab thickness
                        min_vacuum_size=vacuum_thickness,  # minimum vacuum region thickness
                        center_slab=True,  # whether to center the slabs in the c-direction
-                       in_unit_planes=True,  # number of layers or Angstroms for thicknesses
+                       in_unit_planes=False,  # number of layers or Angstroms for thicknesses
                        primitive=prim,  # whether to apply cell reduction on generated slabs
                        max_normal_search=max([abs(m) for m in miller_index]))
 
@@ -60,19 +61,28 @@ def generate_slabs(mpid,
             formula = slab.composition.reduced_formula
             slab.to('poscar', f'{formula}_{millerstr}_conv_{conv}_prim_{prim}_term_{index}.vasp')
 
-    return conv_bulk, unrecon_slabs
+    return conv_bulk, slabs, unrecon_slabs
 
 
 au_mpid = 'mp-149'
 lamno3_mpid = 'mp-19025'
 
-bulk_conv, slabs = generate_slabs(mpid=au_mpid,
-                                  miller_index=(1, 0, 0),
-                                  slab_thickness=20,
-                                  vacuum_thickness=15,
-                                  conv=True,
-                                  prim=True,
-                                  symmetrize=False,
-                                  to_file=True,
-                                  filter_slabs=False,
-                                  recon="diamond_100_2x1")
+bulk_conv, slabs, unrecon_slabs = generate_slabs(mpid=au_mpid,
+                                                 miller_index=(1, 0, 0),
+                                                 slab_thickness=20,
+                                                 vacuum_thickness=15,
+                                                 conv=True,
+                                                 prim=True,
+                                                 symmetrize=False,
+                                                 to_file=True,
+                                                 filter_slabs=False,
+                                                 recon="diamond_100_2x1")
+
+print(f"Unrecon slabs have {len(Shaper.get_layers(unrecon_slabs[0]))} layers")
+print(f"1x1 slabs have {len(Shaper.get_layers(slabs[0]))} layers")
+
+sd_array = []
+for i in range(len(slabs[0].sites)):
+    sd_array.append([False, False, True])
+slabs[0].add_site_property('selective_dynamics', sd_array)
+slabs[0].to('poscar', 'Si100_1x1.vasp')

@@ -82,6 +82,6 @@ latconst = np.round(ouc.lattice.a*(fit.eos_params[-1]/orig_volume)**(1/3), 4)
 
 plt.text(0.1, 0.9, f'Optimized lattice constant: {latconst}A',
          transform=plt.gca().transAxes)
-plt.text(0.1, 0.8, f'Optimized energy per atom: {fit.eos_params[0]/ouc.num_sites}eV',
+plt.text(0.1, 0.8, f'Optimized energy per atom: {np.round(fit.eos_params[0]/ouc.num_sites, 4)}eV',
          transform=plt.gca().transAxes)
 plt.savefig('latconst_converge.png', dpi=300, bbox_inches='tight')
