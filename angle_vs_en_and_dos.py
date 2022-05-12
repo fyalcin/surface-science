@@ -22,11 +22,13 @@ num_sites = struct.num_sites
 bulk_en_ref = -5.41378666
 evtoj = 16.02176
 energies = []
+slab_ens = []
 for angle in np.arange(0, 50, 5):
     vr = Vasprun(f"{angle}.xml")
 
     slab = Structure.from_file(f"Si_recon_{angle}.vasp")
     slab_en = vr.final_energy
+    slab_ens.append((angle, slab_en))
     surfen = 0.5 * evtoj * (slab_en - num_sites * bulk_en_ref) / area
     energies.append((angle, surfen))
 
@@ -45,6 +47,7 @@ for angle in np.arange(0, 50, 5):
     plt.setp(ltext, fontsize=30)
     plt.savefig(f"DOS_{angle}.png", dpi=300, bbox_inches='tight')
 
+slab_ens = np.asarray(slab_ens)
 
 # energies = np.asarray(energies)
 # xarr, yarr = map(np.array, zip(*energies))

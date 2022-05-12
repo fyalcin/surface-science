@@ -1,0 +1,143 @@
+Index: angle_vs_en_and_dos.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import matplotlib.pyplot as plt\nimport numpy as np\nfrom pymatgen.core.structure import Structure\nfrom pymatgen.electronic_structure.plotter import DosPlotter\nfrom pymatgen.io.vasp.outputs import Vasprun\nfrom triboflow.phys.shaper import Shaper\nplt.rcParams.update({'axes.titlesize': 'x-large'})\n\nstruct = Structure.from_file(f\"Si_recon_5.vasp\")\nlayers = Shaper.get_layers(struct)\nc_values = sorted(layers.keys())\nlayer_size = 2\ntop_c = c_values[-layer_size:]\nbot_c = c_values[:layer_size]\n\nlayer_bot = [item for sublist in [layers[i] for i in bot_c] for item in sublist]\nlayer_top = [item for sublist in [layers[i] for i in top_c] for item in sublist]\n\narea = Shaper.get_surface_area(struct)\nnum_sites = struct.num_sites\n\nbulk_en_ref = -5.41378666\n\nenergies = []\nfor angle in np.arange(0, 50, 5):\n    vr = Vasprun(f\"{angle}.xml\")\n\n    slab = Structure.from_file(f\"Si_recon_{angle}.vasp\")\n    slab_en = vr.final_energy\n    surfen = (slab_en - num_sites * bulk_en_ref) / area\n    energies.append((angle, surfen))\n\n    tdos = vr.complete_dos\n    plotter = DosPlotter()\n\n    dos_dict = tdos.get_spd_dos()\n    for orbital, dos in dos_dict.items():\n        plotter.add_dos(label=f\"{orbital}\", dos=dos)\n\n    plt = plotter.get_plot()\n    plt.title(f\"DOS of Si(100) 2x1 reconstruction for u={angle} degrees\")\n    leg = plt.gca().get_legend()\n    ltext = leg.get_texts()  # all the text.Text instance in the legend\n    plt.setp(ltext, fontsize=30)\n    plt.savefig(f\"DOS_{angle}.png\", dpi=300, bbox_inches='tight')\n\n#\n# energies = np.asarray(energies)\n# xarr, yarr = map(np.array, zip(*energies))\n# xarr_norm = (xarr - xarr.mean()) / xarr.std()\n# fit = np.polyfit(xarr_norm, yarr, 6)\n# f = np.poly1d(fit)\n# fig, ax = plt.subplots()\n# crit = f.deriv().r\n# r_crit = crit[crit.imag == 0].real\n# r_crit = np.round(r_crit*xarr.std() + xarr.mean(), 3)\n#\n# ax.scatter(xarr, energies[:, 1])\n# ax.plot(xarr, f(xarr_norm), label='fit')\n# ax.set_title(\"Surface energy vs u\")\n# ax.set_xlabel(\"asdsa\")\n# plt.grid(True)\n# plt.xlabel(\"u (degrees)\")\n# plt.ylabel(\"$\\\\gamma$ (eV/$\\\\AA^2$)\")\n# plt.text(0.4, 0.9, f'Optimized u: {r_crit[-1]} degrees',\n#          transform=plt.gca().transAxes)\n# plt.legend(loc=\"best\", shadow=True)\n#\n# plt.savefig('u_vs_surfen.png', dpi=300, bbox_inches='tight')\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/angle_vs_en_and_dos.py b/angle_vs_en_and_dos.py
+--- a/angle_vs_en_and_dos.py	(revision c98949e1e2102d76dbdd4a688f2462ed9efc8572)
++++ b/angle_vs_en_and_dos.py	(date 1652186244748)
+@@ -27,43 +27,43 @@
+ 
+     slab = Structure.from_file(f"Si_recon_{angle}.vasp")
+     slab_en = vr.final_energy
+-    surfen = (slab_en - num_sites * bulk_en_ref) / area
++    surfen = 0.5 * 16.0217656 * (slab_en - num_sites * bulk_en_ref) / area
+     energies.append((angle, surfen))
+ 
+-    tdos = vr.complete_dos
+-    plotter = DosPlotter()
+-
+-    dos_dict = tdos.get_spd_dos()
+-    for orbital, dos in dos_dict.items():
+-        plotter.add_dos(label=f"{orbital}", dos=dos)
+-
+-    plt = plotter.get_plot()
+-    plt.title(f"DOS of Si(100) 2x1 reconstruction for u={angle} degrees")
+-    leg = plt.gca().get_legend()
+-    ltext = leg.get_texts()  # all the text.Text instance in the legend
+-    plt.setp(ltext, fontsize=30)
+-    plt.savefig(f"DOS_{angle}.png", dpi=300, bbox_inches='tight')
+-
+-#
+-# energies = np.asarray(energies)
+-# xarr, yarr = map(np.array, zip(*energies))
+-# xarr_norm = (xarr - xarr.mean()) / xarr.std()
+-# fit = np.polyfit(xarr_norm, yarr, 6)
+-# f = np.poly1d(fit)
+-# fig, ax = plt.subplots()
+-# crit = f.deriv().r
+-# r_crit = crit[crit.imag == 0].real
+-# r_crit = np.round(r_crit*xarr.std() + xarr.mean(), 3)
+-#
+-# ax.scatter(xarr, energies[:, 1])
+-# ax.plot(xarr, f(xarr_norm), label='fit')
+-# ax.set_title("Surface energy vs u")
+-# ax.set_xlabel("asdsa")
+-# plt.grid(True)
+-# plt.xlabel("u (degrees)")
+-# plt.ylabel("$\\gamma$ (eV/$\\AA^2$)")
+-# plt.text(0.4, 0.9, f'Optimized u: {r_crit[-1]} degrees',
+-#          transform=plt.gca().transAxes)
+-# plt.legend(loc="best", shadow=True)
++    # tdos = vr.complete_dos
++    # plotter = DosPlotter()
++    #
++    # dos_dict = tdos.get_spd_dos()
++    # for orbital, dos in dos_dict.items():
++    #     plotter.add_dos(label=f"{orbital}", dos=dos)
++    #
++    # plt = plotter.get_plot()
++    # plt.title(f"DOS of Si(100) 2x1 reconstruction for u={angle} degrees")
++    # leg = plt.gca().get_legend()
++    # ltext = leg.get_texts()  # all the text.Text instance in the legend
++    # plt.setp(ltext, fontsize=30)
++    # plt.savefig(f"DOS_{angle}.png", dpi=300, bbox_inches='tight')
++
+ #
+-# plt.savefig('u_vs_surfen.png', dpi=300, bbox_inches='tight')
++energies = np.asarray(energies)
++xarr, yarr = map(np.array, zip(*energies))
++xarr_norm = (xarr - xarr.mean()) / xarr.std()
++fit = np.polyfit(xarr_norm, yarr, 6)
++f = np.poly1d(fit)
++fig, ax = plt.subplots()
++crit = f.deriv().r
++r_crit = crit[crit.imag == 0].real
++r_crit = np.round(r_crit*xarr.std() + xarr.mean(), 3)
++
++ax.scatter(xarr, energies[:, 1])
++ax.plot(xarr, f(xarr_norm), label='fit')
++ax.set_title("Surface energy vs u")
++ax.set_xlabel("asdsa")
++plt.grid(True)
++plt.xlabel("u (degrees)")
++plt.ylabel("$\\gamma$ ($J/m^2$)")
++plt.text(0.4, 0.9, f'Optimized u: {r_crit[-1]} degrees',
++         transform=plt.gca().transAxes)
++plt.legend(loc="best", shadow=True)
++
++plt.savefig('u_vs_surfen.png', dpi=300, bbox_inches='tight')
+Index: .idea/.gitignore
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+deleted file mode 100644
+--- a/.idea/.gitignore	(revision c98949e1e2102d76dbdd4a688f2462ed9efc8572)
++++ /dev/null	(revision c98949e1e2102d76dbdd4a688f2462ed9efc8572)
+@@ -1,8 +0,0 @@
+-# Default ignored files
+-/shelf/
+-/workspace.xml
+-# Editor-based HTTP Client requests
+-/httpRequests/
+-# Datasource local storage ignored files
+-/dataSources/
+-/dataSources.local.xml
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.10 (tfintel)\" project-jdk-type=\"Python SDK\" />\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision c98949e1e2102d76dbdd4a688f2462ed9efc8572)
++++ b/.idea/misc.xml	(date 1652354993619)
+@@ -1,4 +1,4 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (tfintel)" project-jdk-type="Python SDK" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (triboflow)" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file
+Index: .idea/surface-science.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<module type=\"PYTHON_MODULE\" version=\"4\">\n  <component name=\"NewModuleRootManager\">\n    <content url=\"file://$MODULE_DIR$\" />\n    <orderEntry type=\"jdk\" jdkName=\"Python 3.10 (tfintel)\" jdkType=\"Python SDK\" />\n    <orderEntry type=\"sourceFolder\" forTests=\"false\" />\n  </component>\n</module>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/surface-science.iml b/.idea/surface-science.iml
+--- a/.idea/surface-science.iml	(revision c98949e1e2102d76dbdd4a688f2462ed9efc8572)
++++ b/.idea/surface-science.iml	(date 1652354993607)
+@@ -2,7 +2,7 @@
+ <module type="PYTHON_MODULE" version="4">
+   <component name="NewModuleRootManager">
+     <content url="file://$MODULE_DIR$" />
+-    <orderEntry type="jdk" jdkName="Python 3.10 (tfintel)" jdkType="Python SDK" />
++    <orderEntry type="jdk" jdkName="Python 3.10 (triboflow)" jdkType="Python SDK" />
+     <orderEntry type="sourceFolder" forTests="false" />
+   </component>
+ </module>
+\ No newline at end of file
