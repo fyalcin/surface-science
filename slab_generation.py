@@ -67,7 +67,7 @@ def generate_slabs(mpid,
 au_mpid = 'mp-149'
 lamno3_mpid = 'mp-19025'
 
-bulk_conv, slabs, unrecon_slabs = generate_slabs(mpid=au_mpid,
+bulk_conv, slabs, recon_slabs = generate_slabs(mpid=au_mpid,
                                                  miller_index=(1, 0, 0),
                                                  slab_thickness=20,
                                                  vacuum_thickness=15,
@@ -78,11 +78,11 @@ bulk_conv, slabs, unrecon_slabs = generate_slabs(mpid=au_mpid,
                                                  filter_slabs=False,
                                                  recon="diamond_100_2x1")
 
-print(f"Unrecon slabs have {len(Shaper.get_layers(unrecon_slabs[0]))} layers")
+print(f"Unrecon slabs have {len(Shaper.get_layers(recon_slabs[0]))} layers")
 print(f"1x1 slabs have {len(Shaper.get_layers(slabs[0]))} layers")
 
 sd_array = []
-for i in range(len(slabs[0].sites)):
+for i in range(len(recon_slabs[0].sites)):
     sd_array.append([False, False, True])
-slabs[0].add_site_property('selective_dynamics', sd_array)
-slabs[0].to('poscar', 'Si100_1x1.vasp')
+recon_slabs[0].add_site_property('selective_dynamics', sd_array)
+recon_slabs[0].to('poscar', 'Si100_recon.vasp')
