@@ -7,14 +7,13 @@ def generate_slabs(mpid,
                    miller_index,
                    slab_thickness,
                    vacuum_thickness,
-                   conv=True,
                    prim=True,
                    symmetrize=False,
                    to_file=False,
                    filter_slabs=False,
                    recon=None):
     with MPRester() as m:
-        conv_bulk = m.get_structure_by_material_id(mpid, conventional_unit_cell=conv)
+        conv_bulk = m.get_structure_by_material_id(mpid, conventional_unit_cell=True)
 
     sg = SlabGenerator(initial_structure=conv_bulk,  # conventional bulk structure
                        miller_index=miller_index,  # miller index for slabs
@@ -26,6 +25,10 @@ def generate_slabs(mpid,
                        max_normal_search=max([abs(m) for m in miller_index]))
 
     slabs = sg.get_slabs(symmetrize=symmetrize)
+    for slab in slabs:
+        slab.add_oxidation_state_by_guess()
+
+    slabs = [slab for slab in slabs if not slab.is_polar()]
     millerstr = ''.join([str(m) for m in miller_index])
 
     if recon:
@@ -56,33 +59,38 @@ def generate_slabs(mpid,
 
     if to_file:
         bulk_formula = conv_bulk.composition.reduced_formula
-        conv_bulk.to('poscar', f'{bulk_formula}_conv_{conv}_bulk.vasp')
+        conv_bulk.to('poscar', f'{bulk_formula}_conv_bulk.vasp')
+        slab = slabs[0]
+        slab.oriented_unit_cell.to('poscar', f"{bulk_formula}_{slab.miller_index}_ouc.vasp")
+
         for index, slab in enumerate(slabs):
             formula = slab.composition.reduced_formula
-            slab.to('poscar', f'{formula}_{millerstr}_conv_{conv}_prim_{prim}_term_{index}.vasp')
+            slab.to('poscar', f'{formula}_{millerstr}_prim_{prim}_term_{index}.vasp')
 
-    return conv_bulk, slabs, unrecon_slabs
+    if recon:
+        return {'bulk': conv_bulk, 'slabs': slabs, 'recon_slabs': recon_slabs, 'unrecon_slabs': unrecon_slabs}
+    else:
+        return {'bulk': conv_bulk, 'slabs': slabs}
 
 
-au_mpid = 'mp-149'
+mpid = 'mp-2657'
 lamno3_mpid = 'mp-19025'
 
-bulk_conv, slabs, recon_slabs = generate_slabs(mpid=au_mpid,
-                                                 miller_index=(1, 0, 0),
-                                                 slab_thickness=20,
-                                                 vacuum_thickness=15,
-                                                 conv=True,
-                                                 prim=True,
-                                                 symmetrize=False,
-                                                 to_file=True,
-                                                 filter_slabs=False,
-                                                 recon="diamond_100_2x1")
+struct_dict = generate_slabs(mpid=mpid,
+                             miller_index=(1, 1, 0),
+                             slab_thickness=16,
+                             vacuum_thickness=15,
+                             prim=True,
+                             symmetrize=True,
+                             to_file=True,
+                             filter_slabs=False,
+                             recon=None)
 
-print(f"Unrecon slabs have {len(Shaper.get_layers(recon_slabs[0]))} layers")
-print(f"1x1 slabs have {len(Shaper.get_layers(slabs[0]))} layers")
-
-sd_array = []
-for i in range(len(recon_slabs[0].sites)):
-    sd_array.append([False, False, True])
-recon_slabs[0].add_site_property('selective_dynamics', sd_array)
-recon_slabs[0].to('poscar', 'Si100_recon.vasp')
+# print(f"Unrecon slabs have {len(Shaper.get_layers(unrecon_slabs[0]))} layers")
+# print(f"1x1 slabs have {len(Shaper.get_layers(slabs[0]))} layers")
+#
+# sd_array = []
+# for i in range(len(recon_slabs[0].sites)):
+#     sd_array.append([False, False, True])
+# recon_slabs[0].add_site_property('selective_dynamics', sd_array)
+# recon_slabs[0].to('poscar', 'Si100_recon.vasp')
